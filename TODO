@@ -1,0 +1,6 @@
+
+# TODO:
+# - raise exception when requiring the same test file many times
+# - safe way of showing spec location
+# - cleanup
+# - default folder locations config hierarchy, user hooks, cli for runner

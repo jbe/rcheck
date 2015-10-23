@@ -2,6 +2,7 @@ module RCheck
   module Debugging
     module SuiteMethods
       def debug(*args)
+        verify_not_done!
         @debuggers << Debugger.new(*args)
       end
     end
