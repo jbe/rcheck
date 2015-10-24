@@ -1,19 +1,27 @@
 
 module RCheck
   module ReportPrinters
-    class RedList
+    class Abstract
       include Colors::Mixin
 
+      def initialize(opts={})
+        @opts = opts
+      end
+    end
+
+    class List < Abstract
       def report(suite)
         bad = suite.local(*%i(error fail pending))
         bad.each do |problem|
           location = problem.backtrace.first
           cprint problem.status, "  %-8s #{location}:" % [problem.status.capitalize]
           cputs :quiet, " (#{suite.full_name})"
-          cprint :quiet, "  %-8s " % [problem.class.name.split('::').last.downcase]
-          puts location.source
+          if problem.status != :pending
+            cprint :quiet, "  %-8s " % [problem.class.name.split('::').last.downcase]
+            puts location.source
+          end
           cputs :quiet, indent(problem.message)
-          puts
+          puts unless problem.status == :pending
         end
 
         suite.children.each do |child_suite|
@@ -27,9 +35,7 @@ module RCheck
       end
     end
 
-    class ExpandedFailTree
-      include Colors::Mixin
-
+    class Tree < Abstract
       def report(suite, indent=0)
         offset indent
         unless suite.name.nil?
@@ -47,15 +53,15 @@ module RCheck
             cprint :quiet, ' +'
           end
           cprint :quiet, ')'
+
+          puts
         end
 
-        puts
-        if suite.severity(:total) != :pass
+        if (suite.severity(:total) != :pass) || suite.parent.nil?
           suite.children.each do |child|
             report child, indent + 2
           end
         end
-        puts if indent == 0
       end
 
       def offset(indent)
@@ -63,9 +69,7 @@ module RCheck
       end
     end
 
-    class Numbers
-      include Colors::Mixin
-
+    class Numbers < Abstract
       def report(suite)
         %i(error fail pending pass).each do |status|
           items = suite.total(status)
@@ -79,7 +83,6 @@ module RCheck
         if suite.total(:error).any?
           cprint :quiet, ' (not accurate)'
         end
-        2.times { puts }
       end
     end
   end

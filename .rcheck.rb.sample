@@ -1,0 +1,13 @@
+#!/bin/env ruby
+
+# Sample ~/.rcheck.rb file.
+
+RCheck.invocation(:user,  'local config for jbe',
+  paths:                  './tests/**/*.rb',
+  seed:                   rand(10000),
+  colors:                 :default,
+  backtrace_filters:      :Default,
+)
+
+# you can also define your own custom invocations here,
+# as well as printers, filters, inpectors, etc.

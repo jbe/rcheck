@@ -33,9 +33,9 @@ module RCheck
     class Abstract
       attr_reader(*%i(status backtrace))
 
-      def initialize(status)
+      def initialize(status, trace)
         @status     = status
-        @backtrace  = RCheck.runner.parse_backtrace caller(4)
+        @backtrace  = Invocation.parse_backtrace trace
         ProgressPrinters.track_progress! self
       end
     end
@@ -44,7 +44,7 @@ module RCheck
       attr_reader(*%i(reason))
       def initialize(reason=nil)
         @reason = reason
-        super :pending
+        super :pending, caller(3)
       end
       def message
         [@reason].compact
@@ -62,11 +62,11 @@ module RCheck
         else
           left.send(op, *right)
         end
-        super !!@result != !!@refute ? :pass : :fail
+        super !!@result != !!@refute ? :pass : :fail, caller(4)
       end
 
       def message
-        [left, op, right].compact.map(&:inspect)
+        [left, op, (right if right.any?)].compact.map(&:inspect)
       end
     end
 
@@ -99,19 +99,14 @@ module RCheck
           end
         end
         @status = :pass if @expected.nil? and @raised.nil?
-        super @status
+        super @status, caller(3)
       end
 
       def message
         [ "expected: #{[@expected || 'no errors', @expected_msg].compact.map(&:inspect).join(', ')}",
-          "got:      #{@raised ? @raised.inspect : 'nothing'}" ]
+          "got:      #{@raised ? @raised.inspect : 'nothing'}",
+          (Invocation.parse_backtrace @raised.backtrace.map(&:to_s) if @raised)].flatten
       end
-    end
-
-    class Expectation
-    end
-
-    class Refutation < Expectation
     end
   end
 end

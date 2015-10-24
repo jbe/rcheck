@@ -2,7 +2,7 @@
 module RCheck
   module ProgressPrinters
     def self.track_progress!(assertion)
-      RCheck.runner[:progress_printers].each do |printer|
+      Invocation[:progress].each do |printer|
         printer.report assertion
       end
     end

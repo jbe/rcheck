@@ -17,21 +17,26 @@ module RCheck
                     exception status backtrace))
 
     def suites
-      @suites.values
+      case Invocation[:order]
+      when :name then @suites.values.sort_by(&:name)
+      when :run  then @suites.values
+      else raise Errors::ConfigName,
+        "unknown suite ordering: #{Invocation[:order]}"
+      end
     end
 
     alias :children :suites
 
     def [](*names)
-      return self if names.empty?
       names = groom_name_chain(names)
+      return self if names.empty?
       name  = names.shift.to_s
       @suites[name][*names] if @suites[name]
     end
 
     def find_or_create(*names)
-      return self if names.empty?
       names = groom_name_chain(names)
+      return self if names.empty?
       name  = names.shift.to_s
       @suites[name] ||= Suite.new(self, name)
       @suites[name].find_or_create(*names)
@@ -47,7 +52,7 @@ module RCheck
         rescue Exception => e
           @exception  = e
           @status     = :error
-          @backtrace  = RCheck.runner.parse_backtrace e.backtrace
+          @backtrace  = Invocation.parse_backtrace e.backtrace
           ProgressPrinters.track_progress! self
         end
       end
@@ -55,8 +60,12 @@ module RCheck
 
     def report!(*printers)
       done!
-      printers = RCheck.runner[:report_printers] unless printers.any?
-      printers.each { |p| p.report self }
+      printers = Invocation[:report] unless printers.any?
+      printers.each do |p|
+        p.report self
+        puts
+      end
+      puts
     end
 
     def local(*statuses)
@@ -120,7 +129,7 @@ module RCheck
 
     def groom_name_chain(names)
       names = names.flatten.map do |n|
-        n.is_a?(String) ? n.split('/') : n.to_s
+        n.to_s.split('/')
       end.flatten
     end
   end
