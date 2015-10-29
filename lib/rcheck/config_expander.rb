@@ -8,10 +8,14 @@ module RCheck
     def self.[](name, value)
       return [] if value == :none
       case name
-      when :colors    then parse_theme value
-      when :progress  then to_instance(ProgressPrinters, *value)
-      when :report    then to_instance(ReportPrinters,   *value)
-      when :filter    then to_instance(BacktraceFilters, *value)
+      when :colors       then parse_theme value
+      when :progress     then to_instance(ProgressPrinters, *value)
+      when :report       then to_instance(ReportPrinters,   *value)
+      when :filters      then to_instance(Filters,          *value)
+      when :anti_filters then to_instance(Filters::Anti,    *value)
+      when :headers      then to_instance(Headers,          *value)
+      when :seed, :fail_code, :success_code
+        value.to_s.to_i
       else value
       end
     end
@@ -27,9 +31,12 @@ module RCheck
     end
 
     def self.safer_const_get(scope, item)
-      scope.const_get(constantize item).new
-    rescue NameError
-      raise Errors::ConfigParam, "#{item.inspect} not found in #{scope.inspect}"
+      if scope.const_defined?(constantize item)
+        val = scope.const_get(constantize item)
+        val.respond_to?(:new) ? val.new : val
+      else
+        raise Errors::ConfigParam, "#{item.inspect} not found in #{scope.inspect}"
+      end
     end
 
     def self.parse_theme(theme)

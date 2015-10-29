@@ -3,21 +3,29 @@ module RCheck
     module SuiteMethods
       def debug(*args)
         verify_not_done!
-        @debuggers << Debugger.new(*args)
+        unless @assertions.any?
+          raise Errors::NoAssertions, 'debugger without a preceding assertion'
+        end
+        @assertions.last.debuggers << Debugger.new(*args)
       end
     end
 
     class Debugger
-      attr_reader(*%i(items))
+      attr_reader(*%i(items backtrace))
 
       def initialize(*items)
-        @items = items
+        @items      = items
+        @backtrace  = Invocation.parse_backtrace caller(3)
       end
 
       def join
         @items.map do |data|
           data.is_a?(String) ? data : data.inspect
         end.join(' ')
+      end
+
+      def location
+        @backtrace.first
       end
     end
   end

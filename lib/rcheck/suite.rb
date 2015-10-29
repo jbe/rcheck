@@ -3,21 +3,36 @@ module RCheck
     include Assertions::SuiteMethods
     include Debugging::SuiteMethods
 
+    SYNONYMS = {
+      all:          %i(error fail pending pass),
+      problematic:  %i(error fail pending),
+      critical:     %i(error fail)
+    }
+
     def initialize(parent, name)
       @parent     = parent
       @name       = name
       @scope      = DSL::Scope.new self
       @suites     = {}
-      @debuggers  = []
       @assertions = []
       @status     = :pass
     end
 
-    attr_reader(*%i(parent name scope assertions debuggers
+    attr_reader(*%i(parent name scope assertions
                     exception status backtrace))
 
+    def introspection()
+      @exception.inspect if @exception
+    end
+
+    def multiline
+      @backtrace ? @backtrace : []
+    end
+
+    def debuggers() [] end
+
     def suites
-      case Invocation[:order]
+      case Invocation[:print_order]
       when :name then @suites.values.sort_by(&:name)
       when :run  then @suites.values
       else raise Errors::ConfigName,
@@ -65,11 +80,13 @@ module RCheck
         p.report self
         puts
       end
-      puts
     end
 
     def local(*statuses)
       done!
+      if (statuses.length == 1) && SYNONYMS[statuses.first]
+        statuses = SYNONYMS[statuses.first]
+      end
       assertions.select { |a| statuses.include? a.status } +
         (statuses.include?(:error) && @exception ? [self] : [])
     end

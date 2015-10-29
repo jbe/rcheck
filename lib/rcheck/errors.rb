@@ -11,6 +11,9 @@ module RCheck
     # invalid arguments for invocation
     class InvocationName < Name; end
 
+    # invalid arguments for invocation
+    class NoSuchSuite < Name; end
+
     # invalid configuration parameter name
     class ConfigName < Name; end
 
@@ -19,5 +22,12 @@ module RCheck
 
     # tried to redefine suite after printing
     class SuiteNotOpen < State; end
+
+    # tried to require same test more than once
+    class ReRequire < State; end
+
+    # tried to do something that requires assertions to be defined
+    # before they were defined
+    class NoAssertions < State; end
   end
 end

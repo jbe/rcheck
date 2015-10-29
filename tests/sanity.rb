@@ -1,6 +1,6 @@
-RCheck.suite 'RCheck/sanity' do
+RCheck.suite 'sanity' do
 
-  suite 'axiomatic' do
+  suite 'axioms' do
     suite :foundation do
       assert true
       refute false
@@ -102,9 +102,12 @@ RCheck.suite 'RCheck/sanity' do
 
   # failures
   # assert false
-  # refute true
+  # debug "it was false!"
+  # refute true, :==, true
+  # debug "it really was"
+  # raise 'bah'
   #
-  # assert_raises(RuntimeError) { }
+  # assert_raises(RuntimeError, "yo") { raise 'bug' }
   # assert_safe { raise("finger") }
 
 end

@@ -1,16 +1,9 @@
 
 # TODO:
-# - cli help
-# - printer parameters
-# - raise exception when auto-requiring the same test file many times
-# - RCheck::Inspectors::Default
-# - debug statements
-# - safe way of showing spec location
-# - cleanup
+# - field test
+# - more tests
+# - are spec locations safe?
+# - cleanup, overview
+# - readme
+# - homepage
 
-# TODO: selector groups
-# :all -> :error, :fail, :pass, :pending
-# :problematic -> :error, :fail, :pending
-# :critical -> :error, :fail
-#
-# pass?

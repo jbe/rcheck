@@ -14,12 +14,14 @@ module RCheck
       attr_reader(*%i(argv config invocations))
 
       def usage?()    @usage    end
+      def help?()     @help     end
       def version?()  @version  end
 
       def parse
         @argv.each do |arg|
           case arg
-          when *%w(--help --usage help usage -h) then @usage   = true
+          when *%w(--help help -h)               then @help    = true
+          when *%w(--usage usage)                then @usage   = true
           when *%w(--version version -v)         then @version = true
           when /^--(.+)/                         then remember arg[2..-1]
           else interpret(arg)
@@ -56,8 +58,9 @@ module RCheck
     def self.invoke!(argv)
       cmd = Parser.new(argv)
       show_usage    if cmd.usage?
+      show_help     if cmd.help?
       show_version  if cmd.version?
-      exit 0 if cmd.usage? or cmd.version?
+      exit 0 if cmd.usage? or cmd.version? or cmd.help?
       safe_invoke! cmd
     end
 
@@ -72,18 +75,29 @@ module RCheck
       puts "usage: rcheck [INVOCATIONS..] [OPTIONS..]"
       puts "       rcheck help    (-h)"
       puts "       rcheck version (-v)"
+      puts "       rcheck usage"
       puts
       puts "Examples:"
       puts
       puts "       rcheck"
-      puts "       rcheck --path tests/thing.rb"
-      puts "       rcheck list"
+      puts "       rcheck --files tests/thing.rb"
       puts "       rcheck tree"
-      puts "       rcheck silent html --seed 1234"
+      #puts "       rcheck silent html --seed 1234"
+    end
+
+    def self.show_help
+      show_usage
       puts
-      puts "Available invocations"
-      RCheck.invocations.each do |inv|
-        puts "%10s -- #{inv.description}" % [inv.name]
+      puts "Available invocations:"
+      puts
+      Invocation.collection.each do |inv|
+        puts "%10s    #{inv.desc}" % [inv.name]
+      end
+      puts
+      puts "Available parameters and base values:"
+      puts
+      Invocation.find(:_base).config.each do |key, default|
+        puts "%16s    #{default.inspect}" % ["--#{key.to_s}"]
       end
     end
 

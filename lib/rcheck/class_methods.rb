@@ -12,21 +12,12 @@ module RCheck
       "RCheck #{VERSION} @ Ruby #{RUBY_VERSION}"
     end
 
-    def cwd_commit_hash
-      path = File.expand_path File.join(*%w(.git refs heads master))
-      File.read(path).chomp if File.file? path
-    end
-
-    def debug_headers
-      [ version,
-        "#{Date.today.to_s} seed: #{RCheck.seed}",
-        "#{RUBY_PLATFORM}",
-          cwd_commit_hash
-        ].flatten.compact
-    end
-
     def config?(param)
       !! Invocation.find(:_base).read(param)
+    end
+
+    def which
+      File.expand_path('../../..', __FILE__)
     end
   end
 

@@ -4,7 +4,14 @@ Easier and faster tests
 
 ---
 
-Work in progress. Just see the test directory for now. It should be self-explanatory.
+Work in progress.
+
+To get started:
+
+- See the `/test` directory
+- `rake install`
+- `rcheck usage`
+- `rcheck help`
 
 ---
 

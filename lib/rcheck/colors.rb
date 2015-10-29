@@ -17,6 +17,7 @@ module RCheck
         fail:     :red,
         error:    :yellow,
         pending:  :teal,
+        value:    :magenta,
         quiet:    :grey
       }
     end

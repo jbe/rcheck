@@ -31,13 +31,17 @@ module RCheck
     end
 
     class Abstract
-      attr_reader(*%i(status backtrace))
+      attr_reader(*%i(status backtrace debuggers))
 
       def initialize(status, trace)
         @status     = status
         @backtrace  = Invocation.parse_backtrace trace
+        @debuggers  = []
         ProgressPrinters.track_progress! self
       end
+
+      def introspection() nil end
+      def multiline() [] end
     end
 
     class Pending < Abstract
@@ -46,8 +50,8 @@ module RCheck
         @reason = reason
         super :pending, caller(3)
       end
-      def message
-        [@reason].compact
+      def introspection
+        @reason || ''
       end
     end
 
@@ -65,8 +69,10 @@ module RCheck
         super !!@result != !!@refute ? :pass : :fail, caller(4)
       end
 
-      def message
-        [left, op, (right if right.any?)].compact.map(&:inspect)
+      def introspection
+        left.inspect + (op ?
+          ".#{op.to_s}(#{right.map(&:inspect).join(', ')})"
+        : '')
       end
     end
 
@@ -102,10 +108,12 @@ module RCheck
         super @status, caller(3)
       end
 
-      def message
-        [ "expected: #{[@expected || 'no errors', @expected_msg].compact.map(&:inspect).join(', ')}",
-          "got:      #{@raised ? @raised.inspect : 'nothing'}",
-          (Invocation.parse_backtrace @raised.backtrace.map(&:to_s) if @raised)].flatten
+      def instrospection
+        @raised ? @raised.inspect : 'no errors'
+      end
+
+      def multiline
+        @raised ? Invocation.parse_backtrace(@raised.backtrace.map(&:to_s)) : []
       end
     end
   end

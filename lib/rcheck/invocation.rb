@@ -9,6 +9,13 @@ module RCheck
     def self.remember(inv)      COLLECTION[inv.name] = inv    end
     def self.invocation(*args)  remember new(*args)           end
 
+    def self.collection()
+      c = COLLECTION.values
+      c.delete COLLECTION[:_base]
+      c.delete COLLECTION[:default]
+      c
+    end
+
     def self.active()
       Thread.current[T_LABEL] ||
         raise("tried to look up invocation outside invocation")
@@ -21,8 +28,12 @@ module RCheck
 
     def self.invoke!(*args)
       args << :default if args.none? {|a| a.is_a? Symbol } 
-      new(nil, '(anonymous)', *(args << :_base).reverse).
+      new(nil, '(anonymous)', *(args.unshift(:_base))).
         invoke!.exit_with_code!
+    end
+
+    def self.inspect_str(obj)
+      self[:inspector].first.inspect_str obj
     end
 
     attr_reader(*%i(name desc invocations config exit_code))
@@ -37,7 +48,10 @@ module RCheck
     end
 
     def seed()    self[:seed] end
-    def suite()   RCheck[self[:suite]] end
+    def suite()
+      RCheck[self[:suite]] ||
+        raise(Errors::NoSuchSuite, "no suite called #{self[:suite]}")
+    end
 
     def read(param)
       return @config[param] if @config.has_key? param
@@ -69,8 +83,9 @@ module RCheck
     end
 
     def parse_backtrace(lines)
-      self[:filter].inject(lines) do |memo, bfilter|
-        bfilter.filter(memo)
+      lines.reject do |line|
+        self[:filters].any? { |f| f.match(line) } and
+          !self[:anti_filters].any? { |f| f.match(line) }
       end.map do |str|
         Backtrace::Line.new str
       end
@@ -79,10 +94,11 @@ module RCheck
     private
 
     def run!
-      Colors.cputs :quiet, RCheck.debug_headers
-      puts
+      Colors.cputs :quiet, Array(self[:headers]).map(&:call)
+      puts if self[:progress].any?
       require_all self[:files]
-      2.times { puts }
+      puts if self[:progress].any?
+      puts if self[:report].any?
       suite.report!
     end
 
