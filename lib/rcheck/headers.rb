@@ -1,9 +1,11 @@
+require 'date'
+
 module RCheck
   module Headers
     class Rcheck
       def call
         [RCheck.version,
-         "#{Date.today.to_s} seed: #{RCheck.seed}"]
+         "#{Date.today.to_s} seed: #{RCheck::Invocation.seed}"]
       end
     end
 

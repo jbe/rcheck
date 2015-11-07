@@ -32,7 +32,7 @@ module RCheck
 
       def remember(key)
         check_missing_value_error
-        unless RCheck.config?(key.to_sym)
+        unless RCheck::Invocation.config?(key.to_sym)
           puts "unrecognized parameter: --#{key}"
           exit 1
         end

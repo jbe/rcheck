@@ -21,7 +21,7 @@ module RCheck
     attr_reader(*%i(parent name scope assertions
                     exception status backtrace))
 
-    def introspection()
+    def introspection
       @exception.inspect if @exception
     end
 
@@ -63,13 +63,14 @@ module RCheck
         find_or_create(*names).suite(&blk)
       else
         begin
-          @scope.instance_eval(&blk)
+          @scope.instance_eval(&blk) if blk
         rescue Exception => e
           @exception  = e
           @status     = :error
           @backtrace  = Invocation.parse_backtrace e.backtrace
           ProgressPrinters.track_progress! self
         end
+        self
       end
     end
 
@@ -83,7 +84,6 @@ module RCheck
     end
 
     def local(*statuses)
-      done!
       if (statuses.length == 1) && SYNONYMS[statuses.first]
         statuses = SYNONYMS[statuses.first]
       end
@@ -92,7 +92,6 @@ module RCheck
     end
 
     def total(*statuses)
-      done!
       @subtree_cache ||= {}
       @subtree_cache[statuses] ||= local(*statuses) +
         suites.map do |child_suite|

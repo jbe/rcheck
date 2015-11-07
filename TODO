@@ -1,9 +1,11 @@
 
 # TODO:
-# - field test
-# - more tests
-# - are spec locations safe?
-# - cleanup, overview
+# - include seed in dsl
+# - self tests, cleanup, overview
+# - field test, are spec locations safe?
 # - readme
 # - homepage
 
+# Remote possibilities:
+# - profiler
+# - coverage

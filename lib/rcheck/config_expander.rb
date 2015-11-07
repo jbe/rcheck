@@ -9,6 +9,7 @@ module RCheck
       return [] if value == :none
       case name
       when :colors       then parse_theme value
+      when :files        then parse_string_array value
       when :progress     then to_instance(ProgressPrinters, *value)
       when :report       then to_instance(ReportPrinters,   *value)
       when :filters      then to_instance(Filters,          *value)
@@ -37,6 +38,10 @@ module RCheck
       else
         raise Errors::ConfigParam, "#{item.inspect} not found in #{scope.inspect}"
       end
+    end
+
+    def self.parse_string_array(value)
+      Array(value).map(&:to_s)
     end
 
     def self.parse_theme(theme)

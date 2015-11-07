@@ -1,4 +1,11 @@
 module RCheck
+
+  # module Invocation
+  #   class Params
+  #     # []
+  #   end
+  # end
+
   class Invocation
     T_LABEL     = :current_rcheck_config
     COLLECTION  = {}
@@ -7,13 +14,18 @@ module RCheck
     def self.active?()          !!Thread.current[T_LABEL]     end
     def self.find(name)         COLLECTION[name]              end
     def self.remember(inv)      COLLECTION[inv.name] = inv    end
-    def self.invocation(*args)  remember new(*args)           end
+    def self.define(*args)      remember new(*args)           end
 
     def self.collection()
       c = COLLECTION.values
       c.delete COLLECTION[:_base]
       c.delete COLLECTION[:default]
       c
+    end
+
+    # extract to config along with stuff from invocation
+    def self.config?(param)
+      !! find(:_base).read(param)
     end
 
     def self.active()
@@ -94,11 +106,12 @@ module RCheck
     private
 
     def run!
+      require_initializers
       Colors.cputs :quiet, Array(self[:headers]).map(&:call)
       puts if self[:progress].any?
-      require_all self[:files]
-      puts if self[:progress].any?
-      puts if self[:report].any?
+      require_test_files
+      puts if self[:progress].any? && suite.total(:all).any?
+      puts if self[:report].any? && suite.total(:all).any?
       suite.report!
     end
 
@@ -119,14 +132,24 @@ module RCheck
       end
     end
 
-    def require_all(*globs)
-      globs.map do |glob|
+    def globs_to_require(globs)
+      Array(globs).map do |glob|
         Dir[glob].map do |file|
           rel = File.join File.dirname(file), File.basename(file, '.*')
           File.expand_path rel
         end
-      end.flatten.shuffle(random: Random.new(self[:seed])).
+      end.flatten
+    end
+
+    def require_test_files
+      globs_to_require(self[:files]).shuffle(random: Random.new(self[:seed])).
         each { |path| require path }
+    end
+
+    def require_initializers
+      globs_to_require(self[:initializers]).each do |path|
+        require path
+      end
     end
   end
 end

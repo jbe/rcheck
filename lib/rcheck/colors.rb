@@ -40,15 +40,6 @@ module RCheck
       def cputs(status, *args)
         with_color(status) { puts(*args) }
       end
-
-      def show_legend
-        return unless STDOUT.tty?
-        RCheck.colors.each do |key, value|
-          print ' '
-          cprint key, key
-        end
-        puts
-      end
     end
 
     extend Mixin

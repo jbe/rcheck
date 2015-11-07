@@ -1,5 +1,4 @@
 require 'forwardable'
-require 'date'
 
 # base:
 require 'rcheck/version'
@@ -22,10 +21,16 @@ require 'rcheck/report_printers'
 require 'rcheck/headers'
 
 require 'rcheck/class_methods'
-require 'rcheck/default_invocations'
 
 module RCheck
+  extend ClassMethods
   ROOT_SUITE      = Suite.new(nil, nil)
   USER_CONF_FILE  = File.join Dir.home, '.rcheck'
   require USER_CONF_FILE if File.file?(USER_CONF_FILE + '.rb')
+end
+
+require 'rcheck/default_invocations'
+
+def RCheck(*args, &blk)
+  RCheck.suite(*args, &blk)
 end

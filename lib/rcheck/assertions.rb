@@ -70,9 +70,15 @@ module RCheck
       end
 
       def introspection
-        left.inspect + (op ?
-          ".#{op.to_s}(#{right.map(&:inspect).join(', ')})"
-        : '')
+        args = right.map(&:inspect).join(', ')
+        left.inspect + case op
+        when *%i(== === < > <= >= ~= <=>) then " #{op} #{args}"
+        when :[]  then "[#{args}]"
+        when :[]=
+          "[#{right.first.inspect}] = "\
+            "#{right[1..-1].map(&:inspect).join(', ')}"
+        else ".#{op.to_s} #{args}"
+        end + " # #{@result.inspect}"
       end
     end
 

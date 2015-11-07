@@ -14,15 +14,17 @@ module RCheck
       def report(suite)
         suite.local(*@opts[:show]).each do |item|
           location = item.backtrace.first
-          cprint item.status, "  %-8s #{location}:" % [item.status.capitalize]
+          cprint item.status, "  %-8s #{location.short}:" % [item.status.capitalize]
           cputs :quiet, " (#{suite.full_name})"
-          if (item.status != :pending)
+          if (item.status == :pending)
+            cputs(:quiet, *dbg_indent(item.reason)) if item.reason
+          else
             cprint :quiet, "  %-8s " % ['']
             # TODO source inspect at error site
-            print location.source
+            puts location.source
             if item.introspection
-              cprint :quiet, " » "
-              cprint :value, item.introspection
+              cprint(:value, *indent('> '))
+              cputs :quiet, item.introspection
             end
             puts
           end
@@ -71,7 +73,7 @@ module RCheck
                 first = false
               end
             end
-            unless continues
+            if suite.children.any? and !continues
               print ' ' unless first
               cprint :quiet, '+'
             end
