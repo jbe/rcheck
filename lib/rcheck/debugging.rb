@@ -15,7 +15,7 @@ module RCheck
 
       def initialize(*items)
         @items      = items
-        @backtrace  = Invocation.parse_backtrace caller(3)
+        @backtrace  = Backtrace.parse caller(3)
       end
 
       def join

@@ -1,6 +1,13 @@
 
 # TODO:
+
+CLI.parse_param
+CLI.format_param
+
+# - refactor OptionExpander
+# - new error names
 # - include seed in dsl
+# - remove spec location lines from trace == genius
 # - self tests, cleanup, overview
 # - field test, are spec locations safe?
 # - readme

@@ -20,8 +20,11 @@ module RCheck
     # invalid configuration parameter name
     class ConfigParam < Name; end
 
+    # Tried to do something that requires an invocation
+    class NoInvocation < State; end
+
     # tried to redefine suite after printing
-    class SuiteNotOpen < State; end
+    class SuiteRedefinition < State; end
 
     # tried to require same test more than once
     class ReRequire < State; end

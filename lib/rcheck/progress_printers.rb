@@ -2,12 +2,12 @@
 module RCheck
   module ProgressPrinters
     def self.track_progress!(assertion)
-      Invocation[:progress].each do |printer|
+      Conf[:progress].each do |printer|
         printer.report assertion
       end
     end
 
-    class ProgressBar
+    class Bar
       def report(assertion)
         Colors.cprint assertion.status, '▄' if STDOUT.tty?
       end

@@ -36,10 +36,10 @@ RCheck 'RCheck/ClassMethods' do
   end
 
   suite :define do
-    name = :sample_invocation
+    name = :sample_command
     val = RCheck.define(name, '')
-    assert val, :is_a?, RCheck::Invocation
-    assert RCheck::Invocation[name], :==, val
+    assert val, :is_a?, RCheck::Command
+    assert RCheck::Command.find(name), :==, val
   end
 
   suite :invoke! do

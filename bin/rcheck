@@ -7,4 +7,4 @@ rescue LoadError
   require 'rcheck/cli'
 end
 
-RCheck::CLI.invoke! ARGV
+RCheck::CLI.new(ARGV).invoke!

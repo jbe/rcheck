@@ -31,58 +31,54 @@ module RCheck
     end
 
     class Abstract
-      attr_reader(*%i(status backtrace debuggers))
+      attr_reader :result
 
-      def initialize(status, trace)
-        @status     = status
-        @backtrace  = Invocation.parse_backtrace trace
-        @debuggers  = []
-        ProgressPrinters.track_progress! self
+      def inspect
+        "#<#{self.class.name}: #{status}>"
       end
-
-      def introspection() nil end
-      def multiline() [] end
     end
 
     class Pending < Abstract
-      attr_reader(*%i(reason))
-      def initialize(reason=nil)
-        @reason = reason
-        super :pending, caller(3)
-      end
-      def introspection
-        @reason || ''
+      def initialize(desc=nil)
+        @result = Result.new(
+          introspection:  desc,
+          status:         :pending,
+          location:       caller(3))
       end
     end
 
     class AbstractAssert < Abstract
-      attr_reader(*%i(name truth left op right))
       def initialize(left, op=nil, *right)
         @left   = left
         @op     = op
         @right  = right
-        @result = if right.empty? && op.nil?
-          left
-        else
-          left.send(op, *right)
-        end
-        super !!@result != !!@refute ? :pass : :fail, caller(4)
+        @truth = (@right.empty? && @op.nil?) ?
+          @left : @left.send(@op, *@right)
+
+        @result = Result.new(
+          status:         !!@truth != !!@refute ? :pass : :fail,
+          location:       caller(4),
+          introspection:  introspection)
       end
 
+      private
       def introspection
-        args = right.map(&:inspect).join(', ')
-        left.inspect + case op
-        when *%i(== === < > <= >= ~= <=>) then " #{op} #{args}"
+        args = @right.map(&:inspect).join(', ')
+        @left.inspect + case @op
+        when *%i(== === < > <= >= ~= <=>) then " #{@op} #{args}"
         when :[]  then "[#{args}]"
         when :[]=
-          "[#{right.first.inspect}] = "\
-            "#{right[1..-1].map(&:inspect).join(', ')}"
-        else ".#{op.to_s} #{args}"
-        end + " # #{@result.inspect}"
+          "[#{@right.first.inspect}] = "\
+            "#{@right[1..-1].map(&:inspect).join(', ')}"
+        when nil then ''
+        else ".#{@op.to_s} #{args}"
+        end + " # #{@truth.inspect}"
+        # TODO: only show comment if different from introspection
       end
     end
 
     class Assert < AbstractAssert
+      # TODO: use self.is_a? instead
       def initialize(*args)
         @refute = false
         super
@@ -97,7 +93,6 @@ module RCheck
     end
 
     class Raises < Abstract
-      attr_reader(*%i(expected expected_msg raised))
       def initialize(expected, msg=nil, &blk)
         @expected = expected
         @expected_msg = msg
@@ -106,20 +101,17 @@ module RCheck
           blk.call
         rescue Exception => e
           @raised = e
-          if @expected && e.is_a?(expected) && (msg.nil? || e.message == msg)
+          if @expected && e.is_a?(@expected) && (msg.nil? || e.message == msg)
             @status = :pass
           end
         end
         @status = :pass if @expected.nil? and @raised.nil?
-        super @status, caller(3)
-      end
 
-      def instrospection
-        @raised ? @raised.inspect : 'no errors'
-      end
-
-      def multiline
-        @raised ? Invocation.parse_backtrace(@raised.backtrace.map(&:to_s)) : []
+        @result = Result.new(
+          status:         @status,
+          location:       caller(3),
+          introspection:  @raised ? @raised.inspect : 'no errors',
+          backtrace:      @status == :fail ? @raised.backtrace : nil)
       end
     end
   end

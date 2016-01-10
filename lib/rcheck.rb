@@ -4,14 +4,18 @@ require 'forwardable'
 require 'rcheck/version'
 require 'rcheck/errors'
 require 'rcheck/backtrace'
+require 'rcheck/formatting'
+require 'rcheck/result'
 require 'rcheck/assertions'
 require 'rcheck/debugging'
 require 'rcheck/suite'
 require 'rcheck/dsl'
 
 # configuration and running:
-require 'rcheck/config_expander'
-require 'rcheck/invocation'
+require 'rcheck/options'
+require 'rcheck/option_expander'
+require 'rcheck/command'
+require 'rcheck/conf'
 
 # pluggable by configuration:
 require 'rcheck/colors'
@@ -29,7 +33,7 @@ module RCheck
   require USER_CONF_FILE if File.file?(USER_CONF_FILE + '.rb')
 end
 
-require 'rcheck/default_invocations'
+require 'rcheck/default_commands'
 
 def RCheck(*args, &blk)
   RCheck.suite(*args, &blk)

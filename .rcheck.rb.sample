@@ -1,8 +1,0 @@
-RCheck.invocation(:user,  'local config for jbe',
-  seed:                   rand(10000),
-  colors:                 :default,
-  filter:                 :default,
-)
-
-# you can also define your own custom invocations here,
-# as well as printers, filters, inpectors, etc.

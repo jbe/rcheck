@@ -24,7 +24,7 @@ module RCheck
 
     module Mixin
       def with_color(status)
-        color = Invocation[:colors][status] ||
+        color = Conf[:colors][status] ||
                 raise("invalid status: #{status.inspect}")
         code  = ESC[color] || raise("invalid color #{color.inspect}")
         # TODO: support color codes

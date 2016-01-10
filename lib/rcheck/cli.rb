@@ -1,108 +1,57 @@
 require 'rcheck'
+require 'rcheck/trollop'
 
 module RCheck
   class CLI
-
-    class Parser
-      def initialize(argv)
-        @argv        = argv
-        @config      = {}
-        @invocations = []
-        parse
+    TROLLOP = Trollop::Parser.new do
+      banner 'Usage:   rcheck [COMMANDS..] [OPTIONS..]'
+      banner "Example: rcheck list --files tests/thing.rb --seed 3276"
+      banner ''
+      banner "Commands:"
+      Command.available.each do |cmd|
+        banner "%10s    #{cmd.desc}" % [cmd.name]
       end
-
-      attr_reader(*%i(argv config invocations))
-
-      def usage?()    @usage    end
-      def help?()     @help     end
-      def version?()  @version  end
-
-      def parse
-        @argv.each do |arg|
-          case arg
-          when *%w(--help help -h)               then @help    = true
-          when *%w(--usage usage)                then @usage   = true
-          when *%w(--version version -v)         then @version = true
-          when /^--(.+)/                         then remember arg[2..-1]
-          else interpret(arg)
-          end
-        end
-        check_missing_value_error
-      end
-
-      def remember(key)
-        check_missing_value_error
-        unless RCheck::Invocation.config?(key.to_sym)
-          puts "unrecognized parameter: --#{key}"
-          exit 1
-        end
-        @name = key.to_sym
-      end
-
-      def interpret(word)
-        if @name
-          @config[@name] = word.to_sym
-          @name          = nil
-        else
-          @invocations << word.to_sym
-        end
-      end
-
-      def check_missing_value_error
-        return unless @name
-        puts "No value provided for --#{@name}!"
-        exit 1
+      banner ''
+      banner 'Options:'
+      version VERSION
+      Options.defaults.each do |k, v|
+        opt k, Options::HELP[k], :default => v
       end
     end
 
-    def self.invoke!(argv)
-      cmd = Parser.new(argv)
-      show_usage    if cmd.usage?
-      show_help     if cmd.help?
-      show_version  if cmd.version?
-      exit 0 if cmd.usage? or cmd.version? or cmd.help?
-      safe_invoke! cmd
+    def initialize(argv)
+      parse_commands(argv)
+      parse_options(argv)
     end
 
-    def self.safe_invoke!(cmd)
-      RCheck.invoke!(*cmd.invocations, cmd.config)
+    def invoke!
+      RCheck.invoke!(*@commands, @options)
     rescue Errors::Base => e
-     puts e.inspect
-     exit 1
+      puts e.inspect
+      exit 1
     end
 
-    def self.show_usage
-      puts "usage: rcheck [INVOCATIONS..] [OPTIONS..]"
-      puts "       rcheck help    (-h)"
-      puts "       rcheck version (-v)"
-      puts "       rcheck usage"
-      puts
-      puts "Examples:"
-      puts
-      puts "       rcheck"
-      puts "       rcheck --files tests/thing.rb"
-      puts "       rcheck tree"
-      #puts "       rcheck silent html --seed 1234"
-    end
-
-    def self.show_help
-      show_usage
-      puts
-      puts "Available invocations:"
-      puts
-      Invocation.collection.each do |inv|
-        puts "%10s    #{inv.desc}" % [inv.name]
+    private
+    def parse_commands(argv)
+      @commands = []
+      until argv.empty? || argv.first.start_with?('-')
+        @commands << argv.shift
       end
-      puts
-      puts "Available parameters and base values:"
-      puts
-      Invocation.find(:_base).config.each do |key, default|
-        puts "%16s    #{default.inspect}" % ["--#{key.to_s}"]
-      end
+      @commands = @commands.map(&:to_sym)
     end
 
-    def self.show_version
-      puts RCheck.version
+    def parse_options(argv)
+      @options = argv.any? ?
+        (Trollop::with_standard_exception_handling TROLLOP do
+          TROLLOP.parse(argv) # welcome to the syntax sandwich
+        end) : {}
+      @options.each_key do |name|
+        @options.delete name unless name.to_s.end_with?('_given') ||
+                                    @options[:"#{name.to_s}_given"]
+      end
+      @options.each_key do |name|
+        @options.delete name if name.to_s.end_with?('_given')
+      end
     end
   end
 end

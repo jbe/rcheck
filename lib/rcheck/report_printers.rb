@@ -13,26 +13,31 @@ module RCheck
     class List < Abstract
       def report(suite)
         suite.local(*@opts[:show]).each do |item|
-          location = item.backtrace.first
-          cprint item.status, "  %-8s #{location.short}:" % [item.status.capitalize]
+          item = item.result
+          location = item.location.first
+          cprint item.status, "  %-8s #{location.short}:" %
+            [item.status.capitalize]
           cputs :quiet, " (#{suite.full_name})"
           if (item.status == :pending)
-            cputs(:quiet, *dbg_indent(item.reason)) if item.reason
+            cputs(:quiet, *dbg_indent(item.introspection)) if item.reason
           else
             cprint :quiet, "  %-8s " % ['']
             # TODO source inspect at error site
             puts location.source
+            # if item.introspection && item.introspection.length > 2000
+            #   puts item.class.inspect
+            # end
             if item.introspection
               cprint(:value, *indent('> '))
               cputs :quiet, item.introspection
             end
             puts
           end
-          cputs :quiet, indent(item.multiline)
+          cputs :quiet, indent(item.backtrace)
 
           if %i(error fail).include?(item.status)
-            item.debuggers.each do |dbg|
-              cputs :quiet, dbg_indent(dbg.items)
+            item.info.each do |dbg|
+              cputs :quiet, dbg_indent(dbg)
             end
           end
         end

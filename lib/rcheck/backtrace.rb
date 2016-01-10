@@ -2,12 +2,20 @@ require 'pathname'
 
 module RCheck
   module Backtrace
+    def self.parse(lines)
+      lines.reject do |line|
+        Conf[:filters].any? { |f| f.match(line) } and
+          !Conf[:anti_filters].any? { |f| f.match(line) }
+      end.map { |str| Line.new str }
+    end
+
     class Line
       attr_reader(*%i(file line))
       def initialize(str)
         @file, @line, @scope = str.split(':')
         @line = line.to_i
-        @file = Pathname.new(File.expand_path(file)).relative_path_from Pathname.new(Dir.pwd)
+        @file = Pathname.new(File.expand_path(file)).
+                relative_path_from Pathname.new(Dir.pwd)
       end
 
       def short

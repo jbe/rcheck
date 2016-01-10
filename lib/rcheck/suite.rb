@@ -15,28 +15,22 @@ module RCheck
       @scope      = DSL::Scope.new self
       @suites     = {}
       @assertions = []
-      @status     = :pass
+      @result     = Result.new(
+        progress: false, status: :pass, location: [full_name])
     end
 
-    attr_reader(*%i(parent name scope assertions
-                    exception status backtrace))
+    attr_reader(*%i(parent name scope assertions result))
 
-    def introspection
-      @exception.inspect if @exception
+    def inspect
+      "#<#{self.class}: #{full_name.inspect}>"
     end
-
-    def multiline
-      @backtrace ? @backtrace : []
-    end
-
-    def debuggers() [] end
 
     def suites
-      case Invocation[:print_order]
-      when :name then @suites.values.sort_by(&:name)
-      when :run  then @suites.values
+      case Conf[:print_order]
+      when 'name' then @suites.values.sort_by(&:name)
+      when 'run'  then @suites.values
       else raise Errors::ConfigName,
-        "unknown suite ordering: #{Invocation[:order]}"
+        "unknown suite ordering: #{Conf[:print_order]}"
       end
     end
 
@@ -65,10 +59,12 @@ module RCheck
         begin
           @scope.instance_eval(&blk) if blk
         rescue Exception => e
-          @exception  = e
-          @status     = :error
-          @backtrace  = Invocation.parse_backtrace e.backtrace
-          ProgressPrinters.track_progress! self
+          @exception = e
+          @result = Result.new(
+            status:         :error,
+            introspection:  @exception.inspect,
+            backtrace:      @exception.backtrace,
+            location:       @exception.backtrace)
         end
         self
       end
@@ -76,7 +72,7 @@ module RCheck
 
     def report!(*printers)
       done!
-      printers = Invocation[:report] unless printers.any?
+      printers = Conf[:report] unless printers.any?
       printers.each do |p|
         p.report self
         puts
@@ -87,7 +83,7 @@ module RCheck
       if (statuses.length == 1) && SYNONYMS[statuses.first]
         statuses = SYNONYMS[statuses.first]
       end
-      assertions.select { |a| statuses.include? a.status } +
+      assertions.select { |a| statuses.include? a.result.status } +
         (statuses.include?(:error) && @exception ? [self] : [])
     end
 
@@ -132,13 +128,9 @@ module RCheck
 
     def verify_not_done!
       if @locked
-        raise Errors::SuiteNotOpen, "#{self} cannot be modified"\
+        raise Errors::SuiteRedefinition, "#{self} cannot be modified"\
           "because it has been marked as done"
       end
-    end
-
-    def message
-      ([@exception.inspect] + @backtrace).compact
     end
 
     private
