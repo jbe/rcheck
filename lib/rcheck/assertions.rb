@@ -36,6 +36,10 @@ module RCheck
       def inspect
         "#<#{self.class.name}: #{status}>"
       end
+
+      def debuggers
+        @debuggers ||= []
+      end
     end
 
     class Pending < Abstract
@@ -49,10 +53,10 @@ module RCheck
 
     class AbstractAssert < Abstract
       def initialize(left, op=nil, *right)
-        @left   = left
-        @op     = op
-        @right  = right
-        @truth = (@right.empty? && @op.nil?) ?
+        @left      = left
+        @op        = op
+        @right     = right
+        @truth     = (@right.empty? && @op.nil?) ?
           @left : @left.send(@op, *@right)
 
         @result = Result.new(

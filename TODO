@@ -4,6 +4,7 @@
 CLI.parse_param
 CLI.format_param
 
+# - show debug lines when something fails
 # - refactor OptionExpander
 # - new error names
 # - include seed in dsl

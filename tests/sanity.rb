@@ -3,9 +3,13 @@ RCheck :sanity do
   suite :axioms do
     suite :foundation do
       assert true
-      refute false
+      debug "truth asserts"
+      refute true
+      debug "lie refutes"
       assert_safe { sleep 0.000001 }
+      debug "sleeping is safe"
       assert_raises(RuntimeError, 'error') { raise 'error' }
+      debug "assert_raises catches runtime error"
     end
 
     suite :equality do
