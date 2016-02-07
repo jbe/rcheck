@@ -2,6 +2,8 @@
 
 Easier and faster tests
 
+[![Build Status](https://travis-ci.org/jbe/rcheck.svg?branch=master)](https://travis-ci.org/jbe/rcheck)
+
 ---
 
 Work in progress..
