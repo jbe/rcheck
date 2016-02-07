@@ -4,7 +4,7 @@ Easier and faster tests
 
 ---
 
-Work in progress.
+Work in progress..
 
 To get started:
 
