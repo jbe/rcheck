@@ -1,11 +1,12 @@
 
 # TODO:
 
-CLI.parse_param
-CLI.format_param
+Option
+  #parse
+  #format
 
-# - show debug lines when something fails
-# - refactor OptionExpander
+
+# - show #debug lines when something fails
 # - new error names
 # - include seed in dsl
 # - remove spec location lines from trace == genius

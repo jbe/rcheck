@@ -28,9 +28,9 @@ require 'rcheck/class_methods'
 
 module RCheck
   extend ClassMethods
-  ROOT_SUITE      = Suite.new(nil, nil)
-  USER_CONF_FILE  = File.join Dir.home, '.rcheck'
-  require USER_CONF_FILE if File.file?(USER_CONF_FILE + '.rb')
+  ROOT_SUITE = Suite.new(nil, nil)
+  USER_CONF  = File.join Dir.home, '.rcheck'
+  require USER_CONF if File.file?(USER_CONF + '.rb')
 end
 
 require 'rcheck/default_commands'

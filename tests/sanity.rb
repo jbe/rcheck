@@ -4,7 +4,7 @@ RCheck :sanity do
     suite :foundation do
       assert true
       debug "truth asserts"
-      refute true
+      refute false
       debug "lie refutes"
       assert_safe { sleep 0.000001 }
       debug "sleeping is safe"

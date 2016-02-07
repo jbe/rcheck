@@ -24,6 +24,6 @@ module RCheck
   #   report_printers:    %i(Html)
   # )
 
-  define :myself, 'run RCheck\'s own test suite',
-    :default, files: "#{RCheck.which}/tests/**/*.rb"
+  define :itself, 'run RCheck\'s own test suite',
+    :_default, files: "#{RCheck.which}/tests/**/*.rb"
 end
