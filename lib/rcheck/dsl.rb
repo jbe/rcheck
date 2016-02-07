@@ -7,7 +7,8 @@ module RCheck
       end
       extend Forwardable
       def_delegators(:@__suite__,
-                     *%i(suite assert refute assert_safe assert_raises debug pending))
+        :suite, :assert, :refute, :assert_safe,
+        :assert_raises, :debug, :pending)
 
       def respond_to?(name)
         super || @__suite__.parent && @__suite__.parent.scope.respond_to?(name)

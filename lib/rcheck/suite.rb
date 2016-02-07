@@ -4,9 +4,9 @@ module RCheck
     include Debugging::SuiteMethods
 
     SYNONYMS = {
-      all:          %i(error fail pending pass),
-      problematic:  %i(error fail pending),
-      critical:     %i(error fail)
+      all:          [:error, :fail, :pending, :pass],
+      problematic:  [:error, :fail, :pending],
+      critical:     [:error, :fail,]
     }
 
     def initialize(parent, name)
@@ -19,7 +19,7 @@ module RCheck
         progress: false, status: :pass, location: [full_name])
     end
 
-    attr_reader(*%i(parent name scope assertions result))
+    attr_reader :parent, :name, :scope, :assertions, :result
 
     def inspect
       "#<#{self.class}: #{full_name.inspect}>"
@@ -100,13 +100,13 @@ module RCheck
     end
 
     def counts(scope)
-      Hash[%i(error fail pending pass).map do |sym|
+      Hash[[:error, :fail, :pending, :pass].map do |sym|
         [sym, send(scope, sym).count]
       end]
     end
 
     def severity(scope)
-      %i(error fail pending).each do |severity|
+      [:error, :fail, :pending].each do |severity|
         return severity if send(scope, severity).any?
       end
       :pass

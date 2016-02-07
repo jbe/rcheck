@@ -7,9 +7,11 @@ module RCheck
       end
     end
 
+    BARCHAR = RUBY_VERSION >= "2.0.0" ? 220.chr : "."
+
     class Bar
       def report(assertion)
-        Colors.cprint assertion.status, '▄' if STDOUT.tty?
+        Colors.cprint assertion.status, BARCHAR if STDOUT.tty?
       end
     end
   end

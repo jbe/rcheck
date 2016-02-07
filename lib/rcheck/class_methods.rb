@@ -4,8 +4,8 @@ module RCheck
     
     def root() RCheck::ROOT_SUITE end
 
-    def_delegators(:root, *%i(suite [] severity))
-    def_delegators(Command, *%i(define invoke!))
+    def_delegators(:root, :suite, :[], :severity)
+    def_delegators(Command, :define, :invoke!)
 
     def version
       "RCheck #{VERSION} @ Ruby #{RUBY_VERSION}"

@@ -30,7 +30,7 @@ RCheck 'RCheck/ClassMethods' do
   end
 
   suite :severity do
-    %i(local total subtree).each do |scope|
+    [:local, :total, :subtree].each do |scope|
       assert RCheck.severity(scope), :is_a?, Symbol
     end
   end

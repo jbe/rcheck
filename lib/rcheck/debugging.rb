@@ -11,7 +11,7 @@ module RCheck
     end
 
     class Debugger
-      attr_reader(*%i(items backtrace))
+      attr_reader :items, :backtrace
 
       def initialize(*items)
         @items      = items

@@ -10,7 +10,7 @@ module RCheck
     end
 
     class Line
-      attr_reader(*%i(file line))
+      attr_reader :file, :line
       def initialize(str)
         @file, @line, @scope = str.split(':')
         @line = line.to_i

@@ -44,7 +44,7 @@ module RCheck
       end
     end
 
-    attr_reader(*%i(name desc implied_commands config))
+    attr_reader :name, :desc, :implied_commands, :config
 
     def initialize(name, desc, *args)
       @name             = name  # if this is a named command definition
@@ -85,7 +85,7 @@ module RCheck
     end
 
     def dispatch
-      %i(pry how).each do |option|
+      [:pry, :how].each do |option|
         return send option if Conf[option]
       end
       run_tests
@@ -110,9 +110,9 @@ module RCheck
       Colors.cputs :quiet, Array(self[:headers]).map(&:call)
       puts if self[:progress].any?
       require_test_files
-      %i(progress report).each {|v| make_space v }
+      [:progress, :report].each {|v| make_space v }
       suite.report!
-      exit %i(pass pending).include?(suite.severity(:total)) ?
+      exit [:pass, :pending].include?(suite.severity(:total)) ?
         self[:success_code] : self[:fail_code]
     end
 

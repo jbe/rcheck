@@ -35,15 +35,15 @@ module RCheck
           end
           cputs :quiet, indent(item.backtrace)
 
-          if %i(error fail).include?(item.status)
+          if [:error, :fail].include?(item.status)
             item.info.each do |dbg|
               cputs :quiet, dbg_indent(dbg)
             end
           end
         end
 
-        if suite.total(*%i(error fail)).any?
-        end
+        # if suite.total(:error, :fail).any?
+        # end
 
         suite.children.each do |child_suite|
           report child_suite
@@ -56,8 +56,10 @@ module RCheck
         Array(lines).map {|line| (' ' * 11) + line.to_s }
       end
 
+      ARR = RUBY_VERSION >= "2.0.0" ? 175.chr : ">" # double right arrow
+
       def dbg_indent(lines)
-        Array(lines).map {|line| '         » ' + line.to_s }
+        Array(lines).map {|line| "         #{ARR} " + line.to_s }
       end
     end
 
@@ -101,14 +103,14 @@ module RCheck
 
     class Numbers < Abstract
       def report(suite)
-        %i(error fail pending pass).each do |status|
+        [:error, :fail, :pending, :pass].each do |status|
           items = suite.total(status)
           if items.any?
             cputs status, "%9d  %s" % [items.count, status.to_s.capitalize]
           end
         end
         print '%9d  Assertions' %
-          [suite.total(*%i(pass fail pending)).count]
+          [suite.total(:pass, :fail, :pending).count]
         if suite.total(:error).any?
           cprint :quiet, ' (not accurate)'
         end

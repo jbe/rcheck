@@ -1,5 +1,5 @@
 module RCheck
-  Command.hide %i(_base _default)
+  Command.hide [:_base, :_default]
 
   define :_base, 'used as a base for all other commands', Options::BASE
   define :_default, 'used when nothing else given', Options::DEFAULT
@@ -20,8 +20,8 @@ module RCheck
     :quiet, report: 'numbers'
 
   # define(:html,
-  #   progress_printers:  %i(),
-  #   report_printers:    %i(Html)
+  #   progress_printers:  [],
+  #   report_printers:    [:Html]
   # )
 
   define :itself, 'run RCheck\'s own test suite',
