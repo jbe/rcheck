@@ -56,7 +56,7 @@ module RCheck
         Array(lines).map {|line| (' ' * 11) + line.to_s }
       end
 
-      ARR = RUBY_VERSION >= "2.0.0" ? 175.chr : ">" # double right arrow
+      ARR = "\u00bb" # double right arrow
 
       def dbg_indent(lines)
         Array(lines).map {|line| "         #{ARR} " + line.to_s }

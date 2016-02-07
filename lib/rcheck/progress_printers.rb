@@ -7,7 +7,7 @@ module RCheck
       end
     end
 
-    BARCHAR = RUBY_VERSION >= "2.0.0" ? 220.chr : "."
+    BARCHAR = "\u2584"
 
     class Bar
       def report(assertion)
